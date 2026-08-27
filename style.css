@@ -1,0 +1,295 @@
+/* GOPHER — 1993 hole, 2026 phone. Phosphor on near-black. */
+:root {
+  --bg: #070908;
+  --bg-2: #0c110c;
+  --fg: #39ff14;
+  --fg-mid: #2bc414;
+  --fg-dim: #1a7a12;
+  --fg-bright: #b8ff9a;
+  --err: #ff6a3d;
+  --max: 70ch;
+  --pad: clamp(1rem, 4vw, 1.75rem);
+  --glow: 0 0 12px rgba(57, 255, 20, 0.28);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", "IBM Plex Mono", Menlo, Consolas, "Courier New", monospace;
+  font-size: clamp(14px, 2.7vw, 16px);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(57, 255, 20, 0.07), transparent 55%),
+    var(--bg);
+  color: var(--fg);
+}
+
+.crt {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 12, 0, 0.28) 2px,
+      rgba(0, 12, 0, 0.28) 3px
+    );
+  opacity: 0.45;
+}
+
+.skip {
+  position: absolute;
+  left: 0.75rem;
+  top: -3rem;
+  z-index: 60;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 0.4rem 0.7rem;
+  text-decoration: none;
+}
+.skip:focus { top: 0.75rem; }
+
+.shell {
+  width: min(var(--max), 100%);
+  margin: 0 auto;
+  padding: var(--pad);
+  padding-bottom: calc(var(--pad) + 2rem);
+  position: relative;
+  z-index: 1;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  border-bottom: 1px solid var(--fg-dim);
+  padding-bottom: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+.status .clock { white-space: nowrap; }
+.host { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.mascot {
+  margin: 0 0 1.1rem;
+  color: var(--fg);
+  text-shadow: var(--glow);
+  font-size: 0.78rem;
+  line-height: 1.2;
+  letter-spacing: 0;
+  overflow: hidden;
+}
+
+h1 {
+  margin: 0 0 0.45rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-shadow: var(--glow);
+}
+
+h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.breath {
+  margin: 0 0 0.4rem;
+  color: var(--fg-bright);
+  text-shadow: var(--glow);
+}
+
+.tag { margin: 0; color: var(--fg-mid); }
+
+.menu-block {
+  margin-top: 1.75rem;
+  padding-top: 1.1rem;
+  border-top: 1px dashed var(--fg-dim);
+}
+
+.wait {
+  margin-top: 1.35rem;
+  padding: 1rem 0.9rem 1.05rem;
+  border: 1px solid var(--fg-mid);
+  box-shadow: var(--glow), inset 0 0 24px rgba(57, 255, 20, 0.05);
+  background: var(--bg-2);
+}
+
+.wait h2 { margin-top: 0; }
+
+.info { margin: 0 0 0.65rem; }
+.info:last-child { margin-bottom: 0; }
+.dim, .idim { color: var(--fg-dim); font-weight: 400; }
+
+.itype {
+  display: inline-block;
+  min-width: 1.15ch;
+  color: var(--fg-bright);
+  margin-right: 0.45ch;
+}
+
+.toc { margin-top: 1.6rem; }
+.selectors {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.selectors li { margin: 0; }
+.selectors a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  color: var(--fg);
+  text-decoration: none;
+  padding: 0.45rem 0.15rem;
+  border-bottom: 1px dotted var(--fg-dim);
+  min-height: 44px;
+  align-items: baseline;
+}
+.selectors a:hover,
+.selectors a:focus-visible {
+  color: var(--fg-bright);
+  text-shadow: var(--glow);
+  outline: none;
+  background: rgba(57, 255, 20, 0.05);
+}
+.path {
+  color: var(--fg-dim);
+  margin-left: auto;
+  font-size: 0.85em;
+}
+
+.steps, .caps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li,
+.caps li {
+  margin: 0 0 0.55rem;
+  padding-left: 1.6rem;
+  position: relative;
+}
+.steps li::before {
+  position: absolute;
+  left: 0;
+  color: var(--fg-bright);
+}
+.steps li:nth-child(1)::before { content: "1."; }
+.steps li:nth-child(2)::before { content: "2."; }
+.steps li:nth-child(3)::before { content: "3."; }
+.steps li:nth-child(4)::before { content: "4."; }
+.caps li { padding-left: 0; }
+
+em { font-style: normal; color: var(--fg-bright); }
+a { color: var(--fg-bright); }
+footer a, .shell > p a { color: var(--fg); }
+
+.prompt {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  color: var(--fg-mid);
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+.star { color: var(--fg-bright); }
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+input[type="email"] {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 44px;
+  background: #050705;
+  color: var(--fg-bright);
+  border: 1px solid var(--fg-dim);
+  border-radius: 0;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  caret-color: var(--fg);
+  box-shadow: inset 0 0 0 0 var(--fg);
+}
+input[type="email"]::placeholder { color: var(--fg-dim); opacity: 0.8; }
+input[type="email"]:focus {
+  outline: none;
+  border-color: var(--fg);
+  box-shadow: var(--glow), inset 0 0 8px rgba(57, 255, 20, 0.08);
+}
+
+button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  min-width: 5.5rem;
+  background: var(--fg);
+  color: var(--bg);
+  border: 1px solid var(--fg);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+}
+button:hover { background: var(--fg-bright); }
+button:focus-visible {
+  outline: 2px solid var(--fg-bright);
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+form.done button { opacity: 0.4; cursor: default; }
+input[readonly] { opacity: 0.85; }
+
+.status-line {
+  min-height: 1.5em;
+  margin: 0.7rem 0 0;
+  color: var(--fg-mid);
+  white-space: pre-wrap;
+}
+.status-line.ok { color: var(--fg-bright); text-shadow: var(--glow); }
+.status-line.err { color: var(--err); }
+.status-line.dup { color: var(--fg-mid); }
+
+footer {
+  margin-top: 2.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--fg-dim);
+  text-align: left;
+}
+footer p { margin: 0; letter-spacing: 0.28em; font-weight: 700; }
+footer .dim { letter-spacing: 0.08em; font-weight: 400; margin-top: 0.25rem; font-size: 0.8rem; }
+
+::selection { background: var(--fg); color: var(--bg); }
+
+@media (min-width: 540px) {
+  h1 { font-size: 1.55rem; }
+  .mascot { font-size: 0.86rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt { display: none; }
+  * { text-shadow: none !important; }
+}
