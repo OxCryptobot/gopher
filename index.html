@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#070908">
-  <meta name="description" content="GOPHER is a paid phone virtual assistant. You send an order. GOPHER fetches.">
-  <title>GOPHER — phone virtual assistant</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E%3C/text%3E%3Crect width='16' height='16' fill='%23070908'/%3E%3Ctext x='2' y='13' font-size='12' font-family='monospace' fill='%2339ff14'%3Eg%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="GOPHER AI is a paid phone virtual assistant. You send an order. It fetches.">
+  <title>GOPHER AI</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23070908'/%3E%3Ctext x='2' y='13' font-size='12' font-family='monospace' fill='%2339ff14'%3Eg%3C/text%3E%3C/svg%3E">
 </head>
 <body>
   <div class="crt" aria-hidden="true"></div>
-  <a class="skip" href="#waitlist">Skip to waitlist</a>
+  <a class="skip" href="#ask">Skip to prompt</a>
 
   <div class="shell">
     <header class="status">
-      <span class="host">gopher://hole.gopher:70/1</span>
+      <span class="host">gopher://gopher.ai:70/1</span>
       <span class="clock" id="clock"></span>
     </header>
 
@@ -28,17 +28,31 @@
          |    ∇   |
           \ --- /
         .-'     '-.
-       /   GOPHER  \
+       / GOPHER AI \
        '-----------'</pre>
-
-        <h1 id="name">GOPHER</h1>
-        <p class="breath">A paid phone virtual assistant. You send an order. GOPHER fetches.</p>
-        <p class="tag">Named for the 1991 protocol: menus, selectors, retrieve. No fluff.</p>
+        <h1 id="name">GOPHER AI</h1>
+        <p class="breath">A paid phone assistant. You send an order. It fetches.</p>
+        <p class="tag">1991 protocol. 2026 interface. Menus, selectors, retrieve.</p>
       </section>
 
-      <section class="menu-block wait" id="waitlist" aria-labelledby="wait-label">
-        <h2 id="wait-label"><span class="itype">7</span> Waitlist <span class="idim">&lt;search&gt;</span></h2>
-        <p class="info">Leave an email. We’ll ping you when the hole opens.</p>
+      <section class="menu-block wait" id="ask" aria-labelledby="ask-label">
+        <h2 id="ask-label"><span class="itype">7</span> Prompt <span class="idim">&lt;search&gt;</span></h2>
+        <p class="info">Type a selector (1–4) or ask in plain language. Same hole, either way.</p>
+
+        <form id="ask-form" autocomplete="off">
+          <label class="prompt" for="command">
+            <span class="star" aria-hidden="true">*</span>
+            <span>select or ask:</span>
+          </label>
+          <div class="row">
+            <input id="command" name="command" type="text" maxlength="280"
+              placeholder="2   or   remind me when ETH dumps"
+              spellcheck="true" enterkeyhint="go">
+            <button type="submit" id="go">GO</button>
+          </div>
+          <p class="status-line" id="ask-status" role="status" aria-live="polite"></p>
+          <p class="keys dim">keys: <kbd>/</kbd> prompt · <kbd>1</kbd>–<kbd>4</kbd> menu · <kbd>7</kbd> waitlist · <kbd>?</kbd> this</p>
+        </form>
 
         <form id="form" method="post" action="/api/waitlist" novalidate>
           <label class="prompt" for="email">
@@ -46,17 +60,9 @@
             <span>email:</span>
           </label>
           <div class="row">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              inputmode="email"
-              autocomplete="email"
-              autocapitalize="off"
-              spellcheck="false"
-              maxlength="254"
-              placeholder="you@domain"
-              required
+            <input id="email" name="email" type="email" inputmode="email"
+              autocomplete="email" autocapitalize="off" spellcheck="false"
+              maxlength="254" placeholder="you@domain" required
               aria-describedby="form-status">
             <button type="submit" id="submit">ENTER</button>
           </div>
@@ -65,55 +71,54 @@
       </section>
 
       <nav class="toc" aria-label="Selectors">
-        <p class="info dim">Directory of GOPHER</p>
+        <p class="info dim">Directory of GOPHER AI</p>
         <ol class="selectors">
-          <li><a href="#about"><span class="itype">1</span> About/ <span class="path">what this is</span></a></li>
-          <li><a href="#how"><span class="itype">1</span> How/ <span class="path">you send an order</span></a></li>
-          <li><a href="#caps"><span class="itype">1</span> Capabilities/ <span class="path">what it actually does</span></a></li>
-          <li><a href="#privacy"><span class="itype">0</span> Privacy <span class="path">one line</span></a></li>
+          <li><a href="#about" data-key="1"><span class="itype">1</span> About/ <span class="path">what this is</span></a></li>
+          <li><a href="#how" data-key="2"><span class="itype">2</span> How/ <span class="path">order in, fetch, reply</span></a></li>
+          <li><a href="#caps" data-key="3"><span class="itype">3</span> Capabilities/ <span class="path">what it does</span></a></li>
+          <li><a href="#privacy" data-key="4"><span class="itype">4</span> Privacy <span class="path">one line</span></a></li>
         </ol>
       </nav>
 
-      <section id="about" class="menu-block">
+      <section id="about" class="menu-block" tabindex="-1">
         <h2><span class="itype">1</span> About/</h2>
-        <p class="info">GOPHER is a paid SaaS phone VA that sits in front of <em>your</em> Grok Bot. You talk to a number. GOPHER turns the talk into an order, posts it over a webhook, and brings the answer back to the same thread.</p>
-        <p class="info">The name is the point. Old Gopher was a menu, a selector, a fetch. No infinite scroll. No chat sludge. GOPHER keeps that contract.</p>
-        <p class="info dim">GOPHER is not an official Grok Bot product. There is no official Grok Bot public API. We talk to the engine you already run, via webhooks and plugins you control.</p>
+        <p class="info">GOPHER AI is a standalone phone assistant you pay for. You talk to a number. It turns the talk into an order, fetches, and brings the answer back to the same thread.</p>
+        <p class="info">The name is the point. Old Gopher was a menu, a selector, a fetch. No infinite scroll. No chat sludge. GOPHER AI keeps that contract and puts a modern prompt on top of it.</p>
       </section>
 
-      <section id="how" class="menu-block">
-        <h2><span class="itype">1</span> How it works/</h2>
+      <section id="how" class="menu-block" tabindex="-1">
+        <h2><span class="itype">2</span> How it works/</h2>
         <ol class="steps">
-          <li>You send an order from the phone — voice or SMS.</li>
-          <li>GOPHER posts that order to a webhook your Grok Bot instance already understands.</li>
-          <li>Grok Bot does the work through plugins you’ve wired: lookup, calendar, draft, notify.</li>
-          <li>GOPHER delivers the result back to the same conversation.</li>
+          <li>You send an order from the phone — voice, SMS, or this prompt.</li>
+          <li>GOPHER AI files it as a selector: fetch this, watch that, draft, remind.</li>
+          <li>Plugins you connect do the work: calendar, mail, files, markets, the rest.</li>
+          <li>The result comes back to the same conversation. You never open twelve tabs.</li>
         </ol>
       </section>
 
-      <section id="caps" class="menu-block">
-        <h2><span class="itype">1</span> Capabilities/</h2>
+      <section id="caps" class="menu-block" tabindex="-1">
+        <h2><span class="itype">3</span> Capabilities/</h2>
         <ul class="caps">
           <li><span class="itype">0</span> Voice and SMS in. A reply out.</li>
-          <li><span class="itype">0</span> Orders, not chat: fetch this, remind me, what’s on Tuesday.</li>
-          <li><span class="itype">0</span> Webhook + plugin routing to the Grok Bot you run.</li>
+          <li><span class="itype">0</span> Orders, not chat: fetch, watch, remind, draft.</li>
+          <li><span class="itype">0</span> Numbered menus + a modern ask box. Keyboard-first.</li>
           <li><span class="itype">0</span> A log of what was asked and what came back.</li>
         </ul>
         <p class="info dim">Not a general chatbot. Not a free public menu. Not a way to scrape your phone.</p>
       </section>
 
-      <section id="privacy" class="menu-block">
-        <h2><span class="itype">0</span> Privacy</h2>
+      <section id="privacy" class="menu-block" tabindex="-1">
+        <h2><span class="itype">4</span> Privacy</h2>
         <p class="info">We keep your waitlist email now; later, your number and order logs to do the job. We don’t sell them.</p>
       </section>
     </main>
 
     <footer>
-      <p>GOPHER</p>
+      <p>GOPHER AI</p>
       <p class="dim">menus · selectors · fetch</p>
     </footer>
   </div>
 
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

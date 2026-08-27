@@ -1,42 +1,23 @@
-# GOPHER
+# GOPHER AI
 
-Landing page and waitlist mock for **GOPHER**, a paid phone virtual assistant.
+Paid phone virtual assistant. Menus, selectors, fetch.
 
-Named after the 1991 Gopher protocol: menus, selectors, fetch. No fluff.
+Old Gopher protocol on the surface. A modern ask box on top of it.
 
-GOPHER is built to sit in front of Grok Bot over **webhooks and plugins you run**. It is not an official Grok Bot product, and there is no official Grok Bot public API.
+## Live
 
-## Run
+https://oxcryptobot.github.io/gopher/
+
+## Local
 
 ```bash
-cd /workspace/gopher
 python3 server.py
 ```
 
-Then open **http://127.0.0.1:7070/**
+Open http://127.0.0.1:7070/
 
-Override bind with `GOPHER_HOST` / `GOPHER_PORT` if you need to.
+Waitlist POSTs to `/api/waitlist` and is stored in `waitlist.json` (not served).
 
-Requires Python 3.10+ (stdlib only).
+## Keys
 
-## Waitlist
-
-`POST /api/waitlist` with JSON `{"email":"you@domain"}` or a normal form field `email`.
-
-- Validates the address
-- Treats duplicates as already-listed (idempotent)
-- Persists signups in [`waitlist.json`](waitlist.json) so they survive refresh
-
-The waitlist file is not served over HTTP.
-
-## Layout
-
-```
-/workspace/gopher/
-  index.html      landing page
-  style.css       phosphor / 70-column menu
-  app.js          waitlist UI
-  server.py       static + waitlist API
-  waitlist.json   signups
-  README.md       this file
-```
+`/` prompt · `1`–`4` menu · `7` waitlist · `?` help
