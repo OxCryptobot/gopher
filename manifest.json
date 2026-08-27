@@ -1,0 +1,9 @@
+{
+  "name": "GOPHER AI",
+  "short_name": "GOPHER",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#070908",
+  "theme_color": "#070908",
+  "description": "Menus, selectors, fetch."
+}

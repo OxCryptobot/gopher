@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#070908">
-  <meta name="description" content="GOPHER AI is a paid phone virtual assistant. You send an order. It fetches.">
+  <meta name="description" content="GOPHER AI is a paid phone assistant. Menus, selectors, fetch. Play FETCH.">
   <title>GOPHER AI</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23070908'/%3E%3Ctext x='2' y='13' font-size='12' font-family='monospace' fill='%2339ff14'%3Eg%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -16,13 +17,13 @@
 
   <div class="shell">
     <header class="status">
-      <span class="host">gopher://gopher.ai:70/1</span>
+      <span class="host" id="host">gopher://gopher.ai:70/1</span>
+      <span class="who" id="who">guest</span>
       <span class="clock" id="clock"></span>
     </header>
 
-    <main>
-      <section class="hero" aria-labelledby="name">
-        <pre class="mascot" aria-hidden="true">
+    <section class="hero" id="hero">
+      <pre class="mascot" aria-hidden="true">
           ,-"""-.
          /  o o  \
          |    ∇   |
@@ -30,95 +31,87 @@
         .-'     '-.
        / GOPHER AI \
        '-----------'</pre>
-        <h1 id="name">GOPHER AI</h1>
-        <p class="breath">A paid phone assistant. You send an order. It fetches.</p>
-        <p class="tag">1991 protocol. 2026 interface. Menus, selectors, retrieve.</p>
-      </section>
+      <h1>GOPHER AI</h1>
+      <p class="breath">A paid phone assistant. You send an order. It fetches.</p>
+      <p class="tag">1991 protocol. 2026 interface. Now with a hole you can play.</p>
+    </section>
 
-      <section class="menu-block wait" id="ask" aria-labelledby="ask-label">
-        <h2 id="ask-label"><span class="itype">7</span> Prompt <span class="idim">&lt;search&gt;</span></h2>
-        <p class="info">Type a selector (1–4) or ask in plain language. Same hole, either way.</p>
+    <section class="menu-block wait" id="ask">
+      <h2><span class="itype">7</span> Prompt <span class="idim">&lt;search&gt;</span></h2>
+      <p class="info">Type a selector, a path, or an order. Same hole, either way.</p>
+      <form id="ask-form" autocomplete="off">
+        <label class="prompt" for="command"><span class="star">*</span> <span>select or ask:</span></label>
+        <div class="row">
+          <input id="command" maxlength="280" placeholder="5   or   fetch ETH   or   play" enterkeyhint="go">
+          <button type="submit" id="go">GO</button>
+        </div>
+        <p class="status-line" id="ask-status" role="status"></p>
+        <p class="keys dim">keys: <kbd>/</kbd> prompt · <kbd>1</kbd>–<kbd>9</kbd> menu · <kbd>?</kbd> help · <kbd>esc</kbd> home</p>
+      </form>
+      <form id="form" novalidate>
+        <label class="prompt" for="email"><span class="star">*</span> <span>email:</span></label>
+        <div class="row">
+          <input id="email" type="email" inputmode="email" autocomplete="email" maxlength="254" placeholder="you@domain" required>
+          <button type="submit" id="submit">ENTER</button>
+        </div>
+        <p class="status-line" id="form-status" role="status"></p>
+      </form>
+    </section>
 
-        <form id="ask-form" autocomplete="off">
-          <label class="prompt" for="command">
-            <span class="star" aria-hidden="true">*</span>
-            <span>select or ask:</span>
-          </label>
-          <div class="row">
-            <input id="command" name="command" type="text" maxlength="280"
-              placeholder="2   or   remind me when ETH dumps"
-              spellcheck="true" enterkeyhint="go">
-            <button type="submit" id="go">GO</button>
+    <nav class="toc" id="dir" aria-label="Gopher directory"></nav>
+
+    <section id="view" class="menu-block" hidden tabindex="-1"></section>
+
+    <section id="auth" class="menu-block wait" hidden>
+      <h2><span class="itype">9</span> User/</h2>
+      <p class="info">A hole on this device. Passphrase never leaves the phone. Not a cloud account yet.</p>
+      <form id="auth-form">
+        <label class="prompt" for="uname"><span class="star">*</span> name:</label>
+        <input id="uname" maxlength="24" autocomplete="username" placeholder="hole-name">
+        <label class="prompt" for="pass"><span class="star">*</span> passphrase:</label>
+        <input id="pass" type="password" maxlength="128" autocomplete="current-password" placeholder="••••">
+        <div class="row">
+          <button type="submit" id="auth-enter">ENTER HOLE</button>
+          <button type="button" id="auth-new" class="ghost">NEW HOLE</button>
+          <button type="button" id="auth-out" class="ghost" hidden>LEAVE</button>
+        </div>
+        <p class="status-line" id="auth-status" role="status"></p>
+      </form>
+    </section>
+
+    <section id="game" class="menu-block game-block" hidden>
+      <h2><span class="itype">5</span> FETCH/</h2>
+      <p class="info">8-bit burrow. Collect packets. Avoid sludge. Arrow keys or WASD. Tap edges on a phone.</p>
+      <div class="game-wrap">
+        <canvas id="fetch" width="160" height="144" aria-label="FETCH, an 8-bit gopher game"></canvas>
+        <div class="game-hud">
+          <span id="g-score">score 0</span>
+          <span id="g-lvl">lvl 1</span>
+          <span id="g-lives">lives 3</span>
+          <span id="g-best">best 0</span>
+        </div>
+        <div class="dpad" aria-hidden="true">
+          <button type="button" data-dir="up">↑</button>
+          <div class="dpad-mid">
+            <button type="button" data-dir="left">←</button>
+            <button type="button" data-dir="down">↓</button>
+            <button type="button" data-dir="right">→</button>
           </div>
-          <p class="status-line" id="ask-status" role="status" aria-live="polite"></p>
-          <p class="keys dim">keys: <kbd>/</kbd> prompt · <kbd>1</kbd>–<kbd>4</kbd> menu · <kbd>7</kbd> waitlist · <kbd>?</kbd> this</p>
-        </form>
-
-        <form id="form" method="post" action="/api/waitlist" novalidate>
-          <label class="prompt" for="email">
-            <span class="star" aria-hidden="true">*</span>
-            <span>email:</span>
-          </label>
-          <div class="row">
-            <input id="email" name="email" type="email" inputmode="email"
-              autocomplete="email" autocapitalize="off" spellcheck="false"
-              maxlength="254" placeholder="you@domain" required
-              aria-describedby="form-status">
-            <button type="submit" id="submit">ENTER</button>
-          </div>
-          <p class="status-line" id="form-status" role="status" aria-live="polite"></p>
-        </form>
-      </section>
-
-      <nav class="toc" aria-label="Selectors">
-        <p class="info dim">Directory of GOPHER AI</p>
-        <ol class="selectors">
-          <li><a href="#about" data-key="1"><span class="itype">1</span> About/ <span class="path">what this is</span></a></li>
-          <li><a href="#how" data-key="2"><span class="itype">2</span> How/ <span class="path">order in, fetch, reply</span></a></li>
-          <li><a href="#caps" data-key="3"><span class="itype">3</span> Capabilities/ <span class="path">what it does</span></a></li>
-          <li><a href="#privacy" data-key="4"><span class="itype">4</span> Privacy <span class="path">one line</span></a></li>
-        </ol>
-      </nav>
-
-      <section id="about" class="menu-block" tabindex="-1">
-        <h2><span class="itype">1</span> About/</h2>
-        <p class="info">GOPHER AI is a standalone phone assistant you pay for. You talk to a number. It turns the talk into an order, fetches, and brings the answer back to the same thread.</p>
-        <p class="info">The name is the point. Old Gopher was a menu, a selector, a fetch. No infinite scroll. No chat sludge. GOPHER AI keeps that contract and puts a modern prompt on top of it.</p>
-      </section>
-
-      <section id="how" class="menu-block" tabindex="-1">
-        <h2><span class="itype">2</span> How it works/</h2>
-        <ol class="steps">
-          <li>You send an order from the phone — voice, SMS, or this prompt.</li>
-          <li>GOPHER AI files it as a selector: fetch this, watch that, draft, remind.</li>
-          <li>Plugins you connect do the work: calendar, mail, files, markets, the rest.</li>
-          <li>The result comes back to the same conversation. You never open twelve tabs.</li>
-        </ol>
-      </section>
-
-      <section id="caps" class="menu-block" tabindex="-1">
-        <h2><span class="itype">3</span> Capabilities/</h2>
-        <ul class="caps">
-          <li><span class="itype">0</span> Voice and SMS in. A reply out.</li>
-          <li><span class="itype">0</span> Orders, not chat: fetch, watch, remind, draft.</li>
-          <li><span class="itype">0</span> Numbered menus + a modern ask box. Keyboard-first.</li>
-          <li><span class="itype">0</span> A log of what was asked and what came back.</li>
-        </ul>
-        <p class="info dim">Not a general chatbot. Not a free public menu. Not a way to scrape your phone.</p>
-      </section>
-
-      <section id="privacy" class="menu-block" tabindex="-1">
-        <h2><span class="itype">4</span> Privacy</h2>
-        <p class="info">We keep your waitlist email now; later, your number and order logs to do the job. We don’t sell them.</p>
-      </section>
-    </main>
+        </div>
+        <div class="row">
+          <button type="button" id="g-start">START</button>
+          <button type="button" id="g-mute" class="ghost">MUTE</button>
+        </div>
+        <p class="status-line" id="g-status">press START. fetch 8 packets to clear a hole.</p>
+      </div>
+    </section>
 
     <footer>
       <p>GOPHER AI</p>
       <p class="dim">menus · selectors · fetch</p>
     </footer>
   </div>
-
+  <script src="game.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
