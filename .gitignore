@@ -1,4 +1,6 @@
 waitlist.json
+orders.json
+scores.json
 __pycache__/
 *.pyc
 .DS_Store

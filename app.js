@@ -5,8 +5,9 @@
   var USERS_KEY = "gopher_users_v1";
   var SESS_KEY = "gopher_session_v1";
   var BEST_KEY = "gopher_fetch_best_v1";
+  var TUT_KEY = "gopher_tut_v1";
 
-  /* Scalable Gopher directory. Add an item here; the hole grows. */
+  /* Scalable Gopher directory. Add an item in hole.json; this is the fallback. */
   var HOLES = {
     "/": {
       title: "Directory of GOPHER AI",
@@ -64,6 +65,15 @@
   var dirEl = $("dir"), viewEl = $("view"), authEl = $("auth"), gameEl = $("game");
   var heroEl = $("hero"), askEl = $("ask");
   var game = null;
+  var scoreSent = false;
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
   function pathNow() {
     var h = (location.hash || "#/").replace(/^#/, "");
@@ -142,14 +152,108 @@
     return all[k];
   }
 
+  function whoName() {
+    var s = session();
+    return (s && s.name) ? s.name : "guest";
+  }
+
+  function postScore(name, score) {
+    fetch("/api/score", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name || "guest", score: score || 0 })
+    }).catch(function () {});
+  }
+
+  function materializeChildren(holes) {
+    Object.keys(holes).forEach(function (p) {
+      var items = (holes[p] && holes[p].items) || [];
+      items.forEach(function (it) {
+        if (it.children && it.children.length && !holes[it.path]) {
+          holes[it.path] = { title: it.name, items: it.children };
+        }
+      });
+    });
+  }
+
+  function applyCatalog(data) {
+    if (!data) return;
+    if (data.holes) HOLES = data.holes;
+    else if (data["/"] || data.items) HOLES = data.holes || data;
+    if (data.alias) ALIAS = data.alias;
+    materializeChildren(HOLES);
+  }
+
+  function parentPath(path) {
+    var p, items, i;
+    for (p in HOLES) {
+      if (!Object.prototype.hasOwnProperty.call(HOLES, p)) continue;
+      items = (HOLES[p] && HOLES[p].items) || [];
+      for (i = 0; i < items.length; i++) {
+        if (items[i].path === path) return p;
+      }
+    }
+    if (path === "/") return "/";
+    i = path.lastIndexOf("/");
+    return i <= 0 ? "/" : path.slice(0, i);
+  }
+
+  function navHole(path) {
+    var hole = HOLES[path];
+    if (hole && hole.items && hole.items.length) return { path: path, hole: hole };
+    var par = parentPath(path);
+    var ph = HOLES[par];
+    if (ph && ph.items && ph.items.length) return { path: par, hole: ph };
+    return { path: "/", hole: HOLES["/"] || { items: [], title: "Directory" } };
+  }
+
+  function itemsByN() {
+    var path = pathNow();
+    var cur = (HOLES[path] && HOLES[path].items) || [];
+    var root = (HOLES["/"] && HOLES["/"].items) || [];
+    var byN = {}, i;
+    for (i = 0; i < root.length; i++) byN[root[i].n] = root[i];
+    for (i = 0; i < cur.length; i++) byN[cur[i].n] = cur[i];
+    return byN;
+  }
+
+  function docHtml(doc) {
+    if (!doc) return "";
+    if (doc.html) return doc.html;
+    var html = "", copy = doc.copy, i;
+    if (typeof copy === "string") copy = [copy];
+    if (Array.isArray(copy)) {
+      for (i = 0; i < copy.length; i++) html += "<p class='info'>" + esc(copy[i]) + "</p>";
+    }
+    if (doc.steps && doc.steps.length) {
+      html += "<ol class='steps'>";
+      for (i = 0; i < doc.steps.length; i++) html += "<li>" + esc(doc.steps[i]) + "</li>";
+      html += "</ol>";
+    }
+    if (doc.caps && doc.caps.length) {
+      html += "<ul class='caps'>";
+      for (i = 0; i < doc.caps.length; i++) {
+        html += "<li><span class='itype'>0</span> " + esc(doc.caps[i]) + "</li>";
+      }
+      html += "</ul>";
+    }
+    if (doc.note) html += "<p class='info dim'>" + esc(doc.note) + "</p>";
+    return html;
+  }
+
   function renderDir(path) {
-    var hole = HOLES["/"] || { items: [], title: "Directory" };
-    var html = "<p class='info dim'>" + hole.title + "</p><div class='selectors'>";
-    hole.items.forEach(function (it) {
+    var nav = navHole(path);
+    var hole = nav.hole || { items: [], title: "Directory" };
+    var html = "<p class='info dim'>" + esc(hole.title || "Directory") + "</p><div class='selectors'>";
+    if (nav.path !== "/") {
+      html += "<button type='button' class='sel' data-path='" + parentPath(nav.path) + "' data-n='0'>" +
+        "<span class='itype'>0</span> ../ <span class='path'>parent</span></button>";
+    }
+    (hole.items || []).forEach(function (it) {
       var active = path === it.path ? " active" : "";
       html += "<button type='button' class='sel" + active + "' data-path='" + it.path + "' data-n='" + it.n + "'>" +
-        "<span class='itype'>" + it.n + "</span> " + it.name +
-        " <span class='path'>" + it.hint + "</span></button>";
+        "<span class='itype'>" + esc(it.n) + "</span> " + esc(it.name) +
+        " <span class='path'>" + esc(it.hint || "") + "</span></button>";
     });
     html += "</div>";
     dirEl.innerHTML = html;
@@ -163,6 +267,19 @@
     gameEl.hidden = true;
     viewEl.hidden = true;
     if (game) game.stop();
+  }
+
+  function showType0(title, text) {
+    heroEl.hidden = true;
+    authEl.hidden = true;
+    gameEl.hidden = true;
+    if (game) game.stop();
+    askEl.hidden = false;
+    viewEl.hidden = false;
+    viewEl.innerHTML =
+      "<h2><span class='itype'>0</span> " + esc(title || "Document") + "</h2>" +
+      "<pre class='gopher-doc'>" + esc(text || "") + "</pre>";
+    viewEl.focus();
   }
 
   function render() {
@@ -182,13 +299,15 @@
     askEl.hidden = true;
 
     if (path === "/user") {
+      askEl.hidden = false;
       authEl.hidden = false;
       var s = session();
       $("auth-out").hidden = !s;
       if (s) setStatus($("auth-status"), "ok", "you’re in as " + s.name + ".");
       return;
     }
-    if (path === "/fetch") {
+    if (path === "/fetch" || path === "/games") {
+      askEl.hidden = false;
       gameEl.hidden = false;
       bootGame();
       return;
@@ -199,15 +318,18 @@
       viewEl.innerHTML = "<h2>3 Error</h2><p class='info'>selector not found. press esc or 0 for the directory.</p>";
       return;
     }
+    if (doc.items && doc.items.length && !doc.html && !doc.copy && !doc.steps && !doc.caps) {
+      askEl.hidden = false;
+      return;
+    }
     viewEl.hidden = false;
-    viewEl.innerHTML = "<h2>" + doc.title + "</h2>" + doc.html;
+    viewEl.innerHTML = "<h2>" + esc(doc.title || path) + "</h2>" + docHtml(doc);
     viewEl.focus();
   }
 
   function bootGame() {
     var canvas = $("fetch");
-    var s = session();
-    var name = s && s.name ? s.name : "guest";
+    var name = whoName();
     $("g-best").textContent = "best " + bestScore(name);
     if (!game) {
       game = new FetchGame(canvas, {
@@ -217,12 +339,93 @@
           $("g-lives").textContent = "lives " + g.lives;
           var b = saveBest(name, g.score);
           $("g-best").textContent = "best " + b;
-          if (g.dead) setStatus($("g-status"), "err", "404 hole. START to dig again.");
-          else if (g.win) setStatus($("g-status"), "ok", "fetched. next hole…");
+          if (g.dead) {
+            setStatus($("g-status"), "err", "404 hole. START to dig again.");
+            if (!scoreSent) {
+              scoreSent = true;
+              postScore(whoName(), g.score);
+            }
+          } else if (g.win) setStatus($("g-status"), "ok", "fetched. next hole…");
         }
       });
     }
     game.draw();
+  }
+
+  function queueLocal(q) {
+    try { localStorage.setItem("gopher_first_order", q); } catch (err) {}
+    setStatus($("ask-status"), "ok", "queued: “" + q + "”. leave an email or enter your hole.");
+    if ($("email")) $("email").focus();
+  }
+
+  function askServer(q) {
+    setStatus($("ask-status"), "", "fetching…");
+    fetch("/api/ask", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ q: q })
+    })
+      .then(function (res) {
+        return res.json().then(function (body) { return body; }).catch(function () { return null; });
+      })
+      .then(function (body) {
+        if (!body || (body.ok !== true && body.kind !== "doc" && body.kind !== "queued")) {
+          clientFetch(q);
+          return;
+        }
+        if (body.kind === "doc") {
+          showType0(body.title || "0 Document", body.text || "");
+          setStatus($("ask-status"), body.ok ? "ok" : "err", body.ok ? "fetched." : (body.text || "fetch failed."));
+          return;
+        }
+        if (body.kind === "queued") {
+          try { localStorage.setItem("gopher_first_order", q); } catch (err) {}
+          showType0("0 Order", body.text || "queued in the hole.");
+          setStatus($("ask-status"), "ok", body.text || "queued in the hole.");
+          return;
+        }
+        queueLocal(q);
+      })
+      .catch(function () { clientFetch(q); });
+  }
+
+  function looksTicker(q) {
+    return /fetch|price|btc|eth|sol|xrp|doge|ada/i.test(q || "");
+  }
+  function tickerId(q) {
+    var low = (q || "").toLowerCase();
+    var map = { btc: "BTC", eth: "ETH", sol: "SOL", xrp: "XRP", doge: "DOGE", ada: "ADA" };
+    var k;
+    for (k in map) if (Object.prototype.hasOwnProperty.call(map, k) && low.indexOf(k) >= 0) return map[k];
+    return "BTC";
+  }
+  function clientFetch(q) {
+    if (!looksTicker(q)) { queueLocal(q); return; }
+    var id = tickerId(q);
+    setStatus($("ask-status"), "", "fetching…");
+    fetch("https://api.coinbase.com/v2/prices/" + id + "-USD/spot")
+      .then(function (res) { return res.json(); })
+      .then(function (j) {
+        var amt = j && j.data && j.data.amount;
+        if (!amt) throw new Error("empty");
+        showType0("0 " + id + "-USD", id + "-USD\n\nlast      " + amt + "\n\nsource    public spot");
+        setStatus($("ask-status"), "ok", "fetched.");
+      })
+      .catch(function () { queueLocal(q); });
+  }
+
+  function tutSeen() {
+    try { return localStorage.getItem(TUT_KEY) === "1"; } catch (e) { return true; }
+  }
+  function tutDismiss() {
+    try { localStorage.setItem(TUT_KEY, "1"); } catch (e) {}
+    var el = $("tutorial");
+    if (el) el.hidden = true;
+  }
+  function tutShow() {
+    if (tutSeen()) return;
+    var el = $("tutorial");
+    if (el) el.hidden = false;
   }
 
   function tickClock() {
@@ -240,6 +443,13 @@
   window.addEventListener("hashchange", render);
   document.addEventListener("keydown", function (e) {
     var inField = e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA");
+    var tut = $("tutorial");
+    var tutOpen = tut && !tut.hidden;
+    if (tutOpen && !inField && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      tutDismiss();
+      if (e.key === "Escape") return;
+    }
     if (!gameEl.hidden && game && game.running && !inField) {
       if (e.key === "ArrowUp" || e.key === "w") { e.preventDefault(); game.input("up"); }
       if (e.key === "ArrowDown" || e.key === "s") { e.preventDefault(); game.input("down"); }
@@ -252,16 +462,19 @@
     }
     if (e.key === "/" || e.key === "?") {
       e.preventDefault();
+      if (tutOpen) tutDismiss();
       go("/");
       $("command").focus();
-      if (e.key === "?") setStatus($("ask-status"), "", "1–4 docs · 5 FETCH · 6 waitlist · 9 user");
+      if (e.key === "?") setStatus($("ask-status"), "", "1 Docs/ · 5 Games/ · 6 waitlist · 9 user");
       return;
     }
     if (e.key === "Escape" || e.key === "0") { go("/"); return; }
-    var items = (HOLES["/"] && HOLES["/"].items) || [];
-    items.forEach(function (it) {
-      if (e.key === it.n) { e.preventDefault(); go(it.path); }
-    });
+    var byN = itemsByN();
+    if (byN[e.key]) {
+      e.preventDefault();
+      if (tutOpen) tutDismiss();
+      go(byN[e.key].path);
+    }
   });
 
   $("ask-form").addEventListener("submit", function (ev) {
@@ -269,7 +482,7 @@
     var q = ($("command").value || "").trim();
     if (!q) return;
     if (/^[0-9]$/.test(q)) {
-      var hit = HOLES["/"].items.filter(function (it) { return it.n === q; })[0];
+      var hit = itemsByN()[q];
       if (hit) { go(hit.path); $("command").value = ""; return; }
     }
     var alias = ALIAS[q.toLowerCase()];
@@ -280,9 +493,8 @@
       $("form").requestSubmit();
       return;
     }
-    try { localStorage.setItem("gopher_first_order", q); } catch (err) {}
-    setStatus($("ask-status"), "ok", "queued: “" + q + "”. leave an email or enter your hole.");
-    $("email").focus();
+    $("command").value = "";
+    askServer(q);
   });
 
   $("form").addEventListener("submit", function (ev) {
@@ -376,6 +588,7 @@
 
   $("g-start").addEventListener("click", function () {
     if (!game) bootGame();
+    scoreSent = false;
     game.start();
     setStatus($("g-status"), "", "fetch packets. avoid orange sludge.");
   });
@@ -390,5 +603,25 @@
     });
   });
 
+  var tutOk = $("tut-ok");
+  if (tutOk) tutOk.addEventListener("click", function () { tutDismiss(); });
+  var tutEl = $("tutorial");
+  if (tutEl) {
+    tutEl.addEventListener("click", function (ev) {
+      if (ev.target === tutEl) tutDismiss();
+    });
+  }
+
   render();
+  tutShow();
+  fetch("hole.json", { headers: { Accept: "application/json" } })
+    .then(function (res) {
+      if (!res.ok) throw new Error("no hole");
+      return res.json();
+    })
+    .then(function (data) {
+      applyCatalog(data);
+      render();
+    })
+    .catch(function () {});
 })();

@@ -8,14 +8,16 @@ https://oxcryptobot.github.io/gopher/
 
 ## On the hole
 
-- Numbered Gopher directory (add items in `HOLES` inside `app.js`)
+- Numbered Gopher directory (edit `hole.json`; the page loads it)
+- Nested selectors: **Docs/**, **Games/**, **User/**
 - Prompt: type a selector, alias (`play`, `login`), or an order
+- Live fetch: type `fetch btc` (or ETH, SOL, XRP, `price`) to pull a ticker as a type-0 document
 - **FETCH/** — original 8-bit burrow game (selector `5`)
 - **User/** — device login (selector `9`). Passphrases are PBKDF2-hashed in localStorage. Not a cloud account yet.
 
 ## Keys
 
-`/` prompt · `1`–`9` menu · `0` / `esc` home · arrows in FETCH
+`/` prompt · `1` Docs/ · `5` Games/FETCH · `9` user · `0` / `esc` home · arrows in FETCH
 
 ## Local
 

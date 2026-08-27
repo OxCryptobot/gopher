@@ -6,6 +6,16 @@
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#070908">
   <meta name="description" content="GOPHER AI is a paid phone assistant. Menus, selectors, fetch. Play FETCH.">
+  <meta property="og:title" content="GOPHER AI">
+  <meta property="og:description" content="A paid phone assistant. Menus, selectors, fetch. Play FETCH.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://oxcryptobot.github.io/gopher/">
+  <meta property="og:image" content="https://oxcryptobot.github.io/gopher/shots/app-home.png">
+  <meta property="og:site_name" content="GOPHER AI">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GOPHER AI">
+  <meta name="twitter:description" content="A paid phone assistant. Menus, selectors, fetch. Play FETCH.">
+  <meta name="twitter:image" content="https://oxcryptobot.github.io/gopher/shots/app-home.png">
   <title>GOPHER AI</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
@@ -14,6 +24,20 @@
 <body>
   <div class="crt" aria-hidden="true"></div>
   <a class="skip" href="#ask">Skip to prompt</a>
+
+  <div id="tutorial" class="tutorial" hidden>
+    <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby="tut-title">
+      <h2 id="tut-title">first hole</h2>
+      <p>A Gopher directory. Selectors, not sludge.</p>
+      <ul>
+        <li><kbd>5</kbd> play FETCH</li>
+        <li><kbd>/</kbd> ask the hole</li>
+        <li><kbd>9</kbd> login</li>
+      </ul>
+      <button type="button" id="tut-ok">GOT IT</button>
+    </div>
+  </div>
+
 
   <div class="shell">
     <header class="status">
@@ -42,7 +66,7 @@
       <form id="ask-form" autocomplete="off">
         <label class="prompt" for="command"><span class="star">*</span> <span>select or ask:</span></label>
         <div class="row">
-          <input id="command" maxlength="280" placeholder="5   or   fetch ETH   or   play" enterkeyhint="go">
+          <input id="command" maxlength="280" placeholder="5   or   fetch btc   or   play" enterkeyhint="go">
           <button type="submit" id="go">GO</button>
         </div>
         <p class="status-line" id="ask-status" role="status"></p>
@@ -81,7 +105,7 @@
 
     <section id="game" class="menu-block game-block" hidden>
       <h2><span class="itype">5</span> FETCH/</h2>
-      <p class="info">8-bit burrow. Collect packets. Avoid sludge. Arrow keys or WASD. Tap edges on a phone.</p>
+      <p class="info">One tap, one tile. Collect blink packets. Walls bump. Orange sludge costs a life. Arrows, WASD, or the pad.</p>
       <div class="game-wrap">
         <canvas id="fetch" width="160" height="144" aria-label="FETCH, an 8-bit gopher game"></canvas>
         <div class="game-hud">
@@ -102,7 +126,7 @@
           <button type="button" id="g-start">START</button>
           <button type="button" id="g-mute" class="ghost">MUTE</button>
         </div>
-        <p class="status-line" id="g-status">press START. fetch 8 packets to clear a hole.</p>
+        <p class="status-line" id="g-status">press START. one direction per tap. fetch the blinking packets.</p>
       </div>
     </section>
 
