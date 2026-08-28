@@ -11,11 +11,28 @@
     "fetch": "/fetch",
     "game": "/fetch",
     "play": "/fetch",
+    "howto": "/play",
     "user": "/user",
     "login": "/user",
     "waitlist": "/waitlist",
     "home": "/",
-    "menu": "/"
+    "menu": "/",
+    "pricing": "/pricing",
+    "terms": "/terms",
+    "faq": "/faq",
+    "changelog": "/changelog",
+    "contact": "/contact",
+    "status": "/status",
+    "legal": "/legal",
+    "security": "/security",
+    "keys": "/keys",
+    "es": "/es",
+    "ship": "/ship",
+    "press": "/press",
+    "jobs": "/jobs",
+    "scores": "/scores",
+    "board": "/scores",
+    "leaderboard": "/scores"
   },
   "holes": {
     "/": {
@@ -26,7 +43,7 @@
           "type": "1",
           "name": "Docs/",
           "path": "/docs",
-          "hint": "about, how, caps, privacy"
+          "hint": "about, play, legal, faq"
         },
         {
           "n": "5",
@@ -85,15 +102,118 @@
         {
           "n": "4",
           "type": "0",
-          "name": "Privacy",
-          "path": "/privacy",
-          "hint": "one line"
+          "name": "Play",
+          "path": "/play",
+          "hint": "how to play FETCH"
+        },
+        {
+          "n": "5",
+          "type": "0",
+          "name": "Pricing",
+          "path": "/pricing",
+          "hint": "waitlist, no fake prices"
+        },
+        {
+          "n": "6",
+          "type": "1",
+          "name": "Legal/",
+          "path": "/legal",
+          "hint": "privacy, terms, security"
+        },
+        {
+          "n": "7",
+          "type": "0",
+          "name": "FAQ",
+          "path": "/faq",
+          "hint": "six short answers"
+        },
+        {
+          "n": "8",
+          "type": "1",
+          "name": "Site/",
+          "path": "/docs/site",
+          "hint": "changelog, contact, ship"
+        },
+        {
+          "n": "9",
+          "type": "0",
+          "name": "Keys",
+          "path": "/keys",
+          "hint": "1-9 / ? esc"
+        }
+      ]
+    },
+    "/docs/site": {
+      "title": "8 Site/",
+      "items": [
+        {
+          "n": "1",
+          "type": "0",
+          "name": "Changelog",
+          "path": "/changelog",
+          "hint": "2026-08-27"
+        },
+        {
+          "n": "2",
+          "type": "0",
+          "name": "Contact",
+          "path": "/contact",
+          "hint": "github + waitlist"
+        },
+        {
+          "n": "3",
+          "type": "0",
+          "name": "Status",
+          "path": "/status",
+          "hint": "Pages vs local"
+        },
+        {
+          "n": "4",
+          "type": "0",
+          "name": "Ship",
+          "path": "/ship",
+          "hint": "live vs next"
+        },
+        {
+          "n": "5",
+          "type": "0",
+          "name": "Press",
+          "path": "/press",
+          "hint": "one paragraph"
+        },
+        {
+          "n": "6",
+          "type": "0",
+          "name": "Jobs",
+          "path": "/jobs",
+          "hint": "not hiring"
+        },
+        {
+          "n": "7",
+          "type": "0",
+          "name": "ES",
+          "path": "/es",
+          "hint": "espa\u00f1ol stub"
         }
       ]
     },
     "/games": {
       "title": "5 Games/",
       "items": [
+        {
+          "n": "1",
+          "type": "0",
+          "name": "How to play",
+          "path": "/play",
+          "hint": "FETCH controls"
+        },
+        {
+          "n": "2",
+          "type": "0",
+          "name": "Scores",
+          "path": "/scores",
+          "hint": "local best + board"
+        },
         {
           "n": "5",
           "type": "1",
@@ -133,6 +253,230 @@
     "/privacy": {
       "title": "4 Privacy",
       "copy": "We keep your waitlist email now; later, your number and order logs to do the job. Login on this page stays on this device. We don\u2019t sell any of it."
+    },
+    "/play": {
+      "title": "How to play FETCH/",
+      "copy": "FETCH is an original 8-bit burrow on this site. One tap, one tile. Free demo. Not the paid phone assistant.",
+      "steps": [
+        "Press 5, type play, or open #/fetch.",
+        "Hit START.",
+        "Move one tile at a time \u2014 arrows, WASD, or the pad.",
+        "Collect the blinking packets.",
+        "Walls bump. You stay put.",
+        "Orange sludge costs a life.",
+        "MUTE if you want quiet.",
+        "Press 9 to login on this device."
+      ],
+      "note": "Type howto in the prompt for this page. Press 5 to play."
+    },
+    "/howto": {
+      "title": "How to play FETCH/",
+      "copy": "FETCH is an original 8-bit burrow on this site. One tap, one tile. Free demo. Not the paid phone assistant.",
+      "steps": [
+        "Press 5, type play, or open #/fetch.",
+        "Hit START.",
+        "Move one tile at a time \u2014 arrows, WASD, or the pad.",
+        "Collect the blinking packets.",
+        "Walls bump. You stay put.",
+        "Orange sludge costs a life.",
+        "MUTE if you want quiet.",
+        "Press 9 to login on this device."
+      ],
+      "note": "Same hole as /play."
+    },
+    "/pricing": {
+      "title": "Pricing/",
+      "copy": [
+        "GOPHER AI is a paid phone assistant. You will talk to a number. You will pay for that number and the fetches it does.",
+        "Prices are not public yet. There is no fake table, no invented monthly fee, no \u201cfrom $x\u201d.",
+        "Join the waitlist now. When billing exists, people on the list hear first."
+      ],
+      "note": "Selector 6, or type waitlist. FETCH on this site stays a free demo."
+    },
+    "/terms": {
+      "title": "Terms/",
+      "copy": [
+        "This site is a public hole for GOPHER AI: a directory, a waitlist, and FETCH.",
+        "Waitlist: you give an email. We keep it to tell you when the paid phone assistant is ready. No other contract yet.",
+        "No SLA. The GitHub Pages hole can go down. The local python server is for a machine you run yourself.",
+        "FETCH is a free demo in the browser. Scores on Pages stay on the device unless you run the local server.",
+        "Login on this page is a device hole, not a cloud account, not a paid seat."
+      ],
+      "note": "Paid phone service terms will ship with billing. Not before."
+    },
+    "/faq": {
+      "title": "FAQ/",
+      "copy": [
+        "What is GOPHER AI? A paid phone assistant named after the 1991 Gopher protocol. You send an order. It fetches. This site is the public hole, not the number yet.",
+        "How do I play FETCH? Press 5 or open #/fetch. START. One tap, one tile. Arrows, WASD, or the pad. Collect blink packets. Walls bump. Orange sludge costs a life.",
+        "Is login cloud? No. A name and passphrase hashed with PBKDF2 in localStorage on this device. Not a GOPHER AI account.",
+        "Is FETCH live prices? No. FETCH is the 8-bit burrow. Live tickers are a different fetch: type fetch btc (or ETH, SOL, XRP) in the prompt.",
+        "GitHub Pages vs local? Pages hosts the static hole (directory, FETCH, device login, client waitlist). python3 server.py on your machine adds /api/waitlist, /api/score, /api/scores, /api/ask.",
+        "How do I waitlist? Selector 6, type waitlist, or use the email form on the site. On Pages it stores on this device if the API is missing. Local python keeps the server list."
+      ]
+    },
+    "/changelog": {
+      "title": "Changelog/",
+      "copy": "2026-08-27 \u2014 first public hole.",
+      "caps": [
+        "hole.json data-driven directory + hash routes",
+        "FETCH, original 8-bit burrow, selector 5",
+        "device login, selector 9, PBKDF2 in localStorage",
+        "live fetch ticker in the prompt (fetch btc)",
+        "PLAY CTA on home \u2014 5 PLAY FETCH"
+      ],
+      "note": "Dated for this ship. No older public log."
+    },
+    "/contact": {
+      "title": "Contact/",
+      "copy": [
+        "Code: github.com/OxCryptobot/gopher",
+        "Waitlist: use the email form on this site (selector 6). That is the inbox we read.",
+        "There is no support number yet. There is no SLA mailbox yet."
+      ]
+    },
+    "/status": {
+      "title": "Status/",
+      "caps": [
+        "Site live on GitHub Pages: oxcryptobot.github.io/gopher",
+        "FETCH playable in the browser",
+        "Waitlist: client-side on Pages; server list when you run local python",
+        "Device login: localStorage only",
+        "Ticker fetch: public spot, client-side",
+        "Score board: GET /api/scores only when python3 server.py is up"
+      ],
+      "note": "No uptime graph. If the Pages hole loads, it is up."
+    },
+    "/legal": {
+      "title": "6 Legal/",
+      "copy": "Short legal hole. Privacy, terms, how login is stored. No paid-service contract yet.",
+      "items": [
+        {
+          "n": "1",
+          "type": "0",
+          "name": "Privacy",
+          "path": "/privacy",
+          "hint": "one line"
+        },
+        {
+          "n": "2",
+          "type": "0",
+          "name": "Terms",
+          "path": "/terms",
+          "hint": "waitlist, no SLA, FETCH demo"
+        },
+        {
+          "n": "3",
+          "type": "0",
+          "name": "Security",
+          "path": "/security",
+          "hint": "device login, no keys"
+        }
+      ]
+    },
+    "/security": {
+      "title": "Security/",
+      "copy": [
+        "Login is PBKDF2 (SHA-256, 120000 iterations) in localStorage. Not cloud. The passphrase never leaves this device.",
+        "No API keys in the page. No wallet keys. No phone number stored here.",
+        "FETCH scores post only to local /api/score when you run python3 server.py. GitHub Pages has no score API.",
+        "Waitlist email goes to /api/waitlist locally, or stays in this browser on Pages."
+      ],
+      "note": "This is a static hole plus an optional local server. Treat it that way."
+    },
+    "/keys": {
+      "title": "9 Keys/",
+      "caps": [
+        "1\u20139 \u2014 selectors in the current directory (home: 1 Docs/, 5 FETCH, 6 waitlist, 8 Games/, 9 User/)",
+        "/ \u2014 focus the prompt",
+        "? \u2014 prompt + a short help line",
+        "esc or 0 \u2014 home",
+        "5 \u2014 play FETCH (from home)",
+        "arrows / WASD / pad \u2014 move in FETCH (one tile)",
+        "START / MUTE \u2014 on the FETCH panel",
+        "type an alias (play, faq, waitlist) or an order (fetch btc)"
+      ]
+    },
+    "/es": {
+      "title": "ES/",
+      "copy": [
+        "GOPHER AI es un asistente de tel\u00e9fono de pago, llamado as\u00ed por el protocolo Gopher de 1991. Hablas a un n\u00famero. Convierte el pedido, busca, y responde en el mismo hilo.",
+        "C\u00f3mo jugar FETCH: pulsa 5 o abre #/fetch. START. Un toque, un tile. Flechas, WASD o el pad. Recoge los paquetes que parpadean. Los muros golpean. El lodo naranja quita una vida. MUTE. 9 para entrar en este aparato."
+      ],
+      "note": "Stub i18n. Un solo hueco. El resto del directorio sigue en ingl\u00e9s."
+    },
+    "/ship": {
+      "title": "Ship/",
+      "copy": "Honest list. LIVE is on this hole now. NEXT is queued, not pretend-shipped.",
+      "caps": [
+        "LIVE FETCH playable (selector 5)",
+        "LIVE data-driven hole.json catalog",
+        "LIVE hash routes (#/docs, #/fetch, #/user)",
+        "LIVE device login, PBKDF2 localStorage",
+        "LIVE waitlist email form",
+        "LIVE ticker fetch (fetch btc / eth / sol / xrp)",
+        "LIVE numbered Gopher directory",
+        "LIVE nested Docs/, Games/, User/",
+        "LIVE prompt aliases",
+        "LIVE GitHub Pages site",
+        "LIVE local python server (python3 server.py)",
+        "LIVE /api/waitlist on local python",
+        "LIVE /api/score on local python",
+        "LIVE /api/scores board on local python",
+        "LIVE /api/ask on local python",
+        "LIVE client waitlist fallback on Pages",
+        "LIVE FETCH MUTE",
+        "LIVE FETCH dpad",
+        "LIVE arrows + WASD, one tap one tile",
+        "LIVE CRT / 8-bit look",
+        "LIVE first-hole tutorial",
+        "LIVE local best score on device",
+        "LIVE guest hole",
+        "LIVE about / how / caps / privacy copy",
+        "LIVE PLAY CTA on home",
+        "LIVE status clock (America/Bogota)",
+        "LIVE type-0 documents from hole.json",
+        "LIVE type-1 directories",
+        "LIVE type-7 waitlist selector",
+        "LIVE sludge, lives, level-up in FETCH",
+        "LIVE order queue in the hole",
+        "LIVE public spot tickers (BTC ETH SOL XRP DOGE ADA)",
+        "LIVE nojekyll Pages + manifest stub",
+        "LIVE keyboard 1-9 / ? esc",
+        "LIVE /play howto, /faq, /legal, /ship docs",
+        "NEXT PWA install",
+        "NEXT custom domain",
+        "NEXT cloud accounts",
+        "NEXT SMS / phone number",
+        "NEXT voice in",
+        "NEXT published prices (none posted now)",
+        "NEXT billing / paid SKU",
+        "NEXT SLA",
+        "NEXT plugins you connect",
+        "NEXT cloud order log",
+        "NEXT public FETCH leaderboard on Pages",
+        "NEXT more games",
+        "NEXT i18n beyond /es stub",
+        "NEXT watch / remind / draft selectors live",
+        "NEXT hiring (not hiring)"
+      ]
+    },
+    "/press": {
+      "title": "Press/",
+      "copy": "GOPHER AI is a paid phone assistant named after the 1991 Gopher protocol. You send an order. It files a selector, fetches, and replies in the same thread. The public hole is a numbered directory plus FETCH, an original 8-bit burrow you can play in the browser. Waitlist is open. Pricing is not public yet.",
+      "note": "No user counts. No ARR. No awards. If we do not have the number, we do not print it."
+    },
+    "/jobs": {
+      "title": "Jobs/",
+      "copy": "Not hiring. There is no openings page and no fake roles. Join the waitlist instead \u2014 selector 6, or type waitlist."
+    },
+    "/scores": {
+      "title": "Scores/",
+      "copy": [
+        "Your local best lives on this device (localStorage). That is the score FETCH shows as best.",
+        "The hole board is GET /api/scores when python3 server.py is up. GitHub Pages has no board API; posts to /api/score no-op there."
+      ],
+      "note": "Type scores, board, or leaderboard. Play FETCH with selector 5."
     }
   }
 }

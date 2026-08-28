@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import threading
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
@@ -20,17 +21,29 @@ SCORES_PATH = os.path.join(ROOT, "scores.json")
 HOST = os.environ.get("GOPHER_HOST", "0.0.0.0")
 PORT = int(os.environ.get("GOPHER_PORT", "7070"))
 EMAIL_RE = re.compile(r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$", re.I)
+MAX_POST_BYTES = 8000
+WAITLIST_RATE_MAX = 8
+WAITLIST_RATE_WINDOW = 3600.0
 HIDDEN = {
     "waitlist.json",
-    "waitlist.json.tmp",
     "orders.json",
-    "orders.json.tmp",
     "scores.json",
-    "scores.json.tmp",
     "server.py",
     "README.md",
+    ".gitignore",
 }
+CSP = (
+    "default-src 'self'; "
+    "img-src 'self' data:; "
+    "style-src 'self' 'unsafe-inline'; "
+    "script-src 'self'; "
+    "connect-src 'self' https://api.coinbase.com https://www.okx.com; "
+    "media-src 'none'; "
+    "object-src 'none'; "
+    "base-uri 'self'"
+)
 LOCK = threading.Lock()
+WAITLIST_HITS: dict[str, list[float]] = {}
 
 TICKER_NAMES = {
     "BTC": "BTC-USDT",
@@ -152,6 +165,19 @@ def format_ticker(tick: dict) -> str:
     return "\n".join(lines)
 
 
+def waitlist_rate_limited(ip: str) -> bool:
+    now = time.time()
+    cutoff = now - WAITLIST_RATE_WINDOW
+    with LOCK:
+        times = [t for t in WAITLIST_HITS.get(ip, []) if t > cutoff]
+        if len(times) >= WAITLIST_RATE_MAX:
+            WAITLIST_HITS[ip] = times
+            return True
+        times.append(now)
+        WAITLIST_HITS[ip] = times
+        return False
+
+
 class Handler(SimpleHTTPRequestHandler):
     server_version = "GOPHER/0.1"
 
@@ -163,13 +189,36 @@ class Handler(SimpleHTTPRequestHandler):
         return None
 
     def end_headers(self) -> None:
-        self.send_header("Cache-Control", "no-store")
+        self.send_header(
+            "Content-Security-Policy",
+            CSP,
+        )
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Cache-Control", self._cache_control())
         super().end_headers()
+
+    def _cache_control(self) -> str:
+        path = urlparse(self.path).path.lower()
+        base = os.path.basename(path)
+        if base in ("index.html", "hole.json") or path in ("/", "/index.html", "/hole.json"):
+            return "no-cache"
+        if base.endswith((".png", ".css", ".js")):
+            return "public, max-age=3600"
+        return "no-store"
 
     def translate_path(self, path: str) -> str:
         mapped = super().translate_path(path)
         name = os.path.basename(mapped)
-        if name in HIDDEN:
+        if name in HIDDEN or name.endswith(".tmp"):
+            return os.path.join(ROOT, "__no_such_file__")
+        try:
+            rel = os.path.relpath(mapped, ROOT)
+        except ValueError:
+            return os.path.join(ROOT, "__no_such_file__")
+        if rel.startswith("..") or ".git" in rel.split(os.sep):
             return os.path.join(ROOT, "__no_such_file__")
         return mapped
 
@@ -179,6 +228,12 @@ class Handler(SimpleHTTPRequestHandler):
         if parsed.path in ("/", "/index.html"):
             self.path = "/index.html"
             return super().do_GET()
+        if path == "/health":
+            self._health()
+            return
+        if path == "/api/scores":
+            self._scores()
+            return
         if path == "/api/waitlist":
             self._json(405, {"ok": False, "error": "POST an email to join."})
             return
@@ -188,6 +243,18 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
 
     def do_POST(self) -> None:
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except (TypeError, ValueError):
+            length = 0
+        if length > MAX_POST_BYTES:
+            parsed = urlparse(self.path)
+            path = parsed.path.rstrip("/")
+            if path == "/api/waitlist":
+                self._fail(413, "payload too large")
+            else:
+                self._json(413, {"ok": False, "error": "payload too large"})
+            return
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
         if path == "/api/waitlist":
@@ -201,7 +268,35 @@ class Handler(SimpleHTTPRequestHandler):
             return
         self.send_error(404, "Not found")
 
-    def _read_json(self, max_len: int = 4096):
+    def _health(self) -> None:
+        if wants_json(self):
+            self._json(200, {"ok": True})
+            return
+        data = b"ok"
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _scores(self) -> None:
+        with LOCK:
+            scores = load_list(SCORES_PATH)
+        ranked = []
+        for entry in scores:
+            if not isinstance(entry, dict):
+                continue
+            name = entry.get("name")
+            score = entry.get("score")
+            if not isinstance(name, str):
+                continue
+            if isinstance(score, bool) or not isinstance(score, (int, float)):
+                continue
+            ranked.append({"name": name, "score": int(score)})
+        ranked.sort(key=lambda item: item["score"], reverse=True)
+        self._json(200, ranked[:10])
+
+    def _read_json(self, max_len: int = MAX_POST_BYTES):
         length = int(self.headers.get("Content-Length") or 0)
         if length > max_len:
             return None, "payload too large"
@@ -216,8 +311,14 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _waitlist(self) -> None:
         length = int(self.headers.get("Content-Length") or 0)
-        if length > 4096:
+        if length > MAX_POST_BYTES:
             self._fail(413, "payload too large")
+            return
+        ip = self.client_address[0] if self.client_address else ""
+        if waitlist_rate_limited(ip):
+            if length:
+                self.rfile.read(length)
+            self._fail(429, "too many requests")
             return
         raw = self.rfile.read(length) if length else b""
         email = self._extract_email(raw)
@@ -345,7 +446,7 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             self._html_result(payload, code)
 
-    def _json(self, code: int, payload: dict) -> None:
+    def _json(self, code: int, payload: dict | list) -> None:
         data = json.dumps(payload).encode("utf-8")
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")

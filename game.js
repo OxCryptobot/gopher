@@ -9,13 +9,24 @@
   function rnd(n) { return Math.floor(Math.random() * n); }
 
   function FetchGame(canvas, hooks) {
+    this.canvas = canvas;
     this.c = canvas.getContext("2d");
     this.c.imageSmoothingEnabled = false;
     this.hooks = hooks || {};
     this.mute = true;
     this.running = false;
+    this.paused = false;
+    this.looping = false;
     this.raf = 0;
+    this.parts = [];
+    this.flash = 0;
+    this.combo = false;
+    this.tx = 0;
+    this.ty = 0;
+    this.tOn = false;
     this.reset(1);
+    this.bind();
+    this.ensureLoop();
   }
 
   FetchGame.prototype.reset = function (lvl) {
@@ -26,6 +37,7 @@
     this.got = 0;
     this.dead = false;
     this.win = false;
+    this.combo = false;
     this.packets = [];
     this.sludge = [];
     var i, p;
@@ -63,11 +75,63 @@
     return false;
   };
 
+  FetchGame.prototype.bind = function () {
+    var self = this, el = this.canvas;
+    this._onTs = function (e) {
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      self.tx = t.clientX;
+      self.ty = t.clientY;
+      self.tOn = true;
+    };
+    this._onTm = function (e) {
+      if (!self.tOn) return;
+      var t = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+      if (!t) return;
+      if (self.swipeDir(t.clientX - self.tx, t.clientY - self.ty)) {
+        if (e.cancelable) e.preventDefault();
+      }
+    };
+    this._onTe = function (e) {
+      if (!self.tOn) return;
+      self.tOn = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t) return;
+      var dir = self.swipeDir(t.clientX - self.tx, t.clientY - self.ty);
+      if (dir) self.input(dir);
+    };
+    this._onTc = function () { self.tOn = false; };
+
+    el.addEventListener("touchstart", this._onTs, { passive: true });
+    el.addEventListener("touchmove", this._onTm, { passive: false });
+    el.addEventListener("touchend", this._onTe, { passive: true });
+    el.addEventListener("touchcancel", this._onTc, { passive: true });
+  };
+
+  FetchGame.prototype.swipeDir = function (dx, dy) {
+    var ax = Math.abs(dx), ay = Math.abs(dy);
+    if (ax < 18 && ay < 18) return null;
+    if (ax >= ay * 1.2) return dx > 0 ? "right" : "left";
+    if (ay >= ax * 1.2) return dy > 0 ? "down" : "up";
+    return null;
+  };
+
   FetchGame.prototype.input = function (name) {
-    if (!this.running || this.dead || this.win) return;
+    if (!this.running || this.dead || this.win || this.paused) return;
     var d = DIRS[name];
     if (!d) return;
     this.step(d[0], d[1]);
+  };
+
+  FetchGame.prototype.pauseToggle = function () {
+    if (!this.running || this.dead) return;
+    this.paused = !this.paused;
+    this.emit();
+    this.paint();
+  };
+
+  FetchGame.prototype.pause = function () {
+    this.pauseToggle();
   };
 
   FetchGame.prototype.beep = function (f) {
@@ -86,6 +150,39 @@
     } catch (e) {}
   };
 
+  FetchGame.prototype.buzz = function (ms) {
+    try {
+      if (global.matchMedia && global.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (global.navigator && global.navigator.vibrate) global.navigator.vibrate(ms);
+    } catch (e) {}
+  };
+
+  FetchGame.prototype.speck = function (tx, ty) {
+    var i, cx = tx * TILE + 4, cy = ty * TILE + 4;
+    for (i = 0; i < 8; i++) {
+      this.parts.push({
+        x: cx + rnd(5) - 2,
+        y: cy + rnd(5) - 2,
+        vx: (rnd(7) - 3) * 0.4,
+        vy: (rnd(7) - 3) * 0.4 - 0.25,
+        life: 8 + rnd(10),
+        c: rnd(2) ? "#b8ff9a" : "#39ff14"
+      });
+    }
+  };
+
+  FetchGame.prototype.tickFx = function () {
+    var i, p;
+    for (i = this.parts.length - 1; i >= 0; i--) {
+      p = this.parts[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= 1;
+      if (p.life <= 0) this.parts.splice(i, 1);
+    }
+    if (this.flash > 0) this.flash -= 1;
+  };
+
   FetchGame.prototype.step = function (dx, dy) {
     var nx = this.px + dx;
     var ny = this.py + dy;
@@ -93,7 +190,7 @@
       this.beep(90);
       return;
     }
-    var i, s;
+    var i, grabbed = false;
     for (i = 0; i < this.sludge.length; i++) {
       if (this.sludge[i].x === nx && this.sludge[i].y === ny) {
         this.hit();
@@ -107,27 +204,38 @@
         this.packets.splice(i, 1);
         this.got++;
         this.score += 10 * this.lvl;
-        this.beep(660);
+        grabbed = true;
+        this.speck(this.px, this.py);
       }
+    }
+    if (grabbed) {
+      if (this.combo) this.score += 1;
+      this.combo = true;
+      this.beep(660);
+      this.buzz(12);
+    } else {
+      this.combo = false;
     }
     if (this.got >= this.need) {
       this.win = true;
+      this.flash = 3;
       this.beep(880);
       var self = this;
       setTimeout(function () {
         if (!self.running) return;
         self.reset(self.lvl + 1);
         self.win = false;
+        self.flash = 3;
         self.emit();
-        self.draw();
+        self.paint();
       }, 650);
       this.emit();
-      this.draw();
+      this.paint();
       return;
     }
     this.moveSludge();
     this.emit();
-    this.draw();
+    this.paint();
   };
 
   FetchGame.prototype.moveSludge = function () {
@@ -153,24 +261,33 @@
 
   FetchGame.prototype.hit = function () {
     this.lives -= 1;
+    this.combo = false;
     this.beep(110);
+    this.buzz(40);
     if (this.lives <= 0) {
       this.dead = true;
       this.running = false;
+      this.paused = false;
     } else {
       this.px = 2;
       this.py = 8;
     }
     this.emit();
-    this.draw();
+    this.paint();
   };
 
   FetchGame.prototype.emit = function () {
     if (this.hooks.onHud) this.hooks.onHud(this);
   };
 
-  FetchGame.prototype.draw = function () {
-    var c = this.c, x, y, i, blink;
+  FetchGame.prototype.centerText = function (str, y) {
+    var c = this.c, w;
+    w = c.measureText(str).width;
+    c.fillText(str, (160 - w) / 2, y);
+  };
+
+  FetchGame.prototype.paint = function () {
+    var c = this.c, x, y, i, blink, p;
     c.fillStyle = "#020302";
     c.fillRect(0, 0, 160, 144);
     c.fillStyle = "#0b330b";
@@ -204,20 +321,48 @@
     c.fillStyle = "#070908";
     c.fillRect(gx + 2, gy + 3, 1, 1);
     c.fillRect(gx + 5, gy + 3, 1, 1);
+    for (i = 0; i < this.parts.length; i++) {
+      p = this.parts[i];
+      c.fillStyle = p.c;
+      c.fillRect(p.x | 0, p.y | 0, 1, 1);
+    }
+    c.font = "8px monospace";
     if (this.dead) {
       c.fillStyle = "#ff6a3d";
-      c.font = "8px monospace";
-      c.fillText("404 HOLE", 52, 80);
+      this.centerText("404", 68);
+      this.centerText(String(this.score), 82);
     } else if (this.win) {
       c.fillStyle = "#b8ff9a";
-      c.font = "8px monospace";
-      c.fillText("FETCHED", 56, 80);
+      this.centerText("FETCHED", 80);
+    } else if (this.paused) {
+      c.fillStyle = "rgba(2,3,2,0.45)";
+      c.fillRect(0, 0, 160, 144);
+      c.fillStyle = "#b8ff9a";
+      this.centerText("PAUSE", 80);
+    }
+    if (this.flash > 0) {
+      c.fillStyle = "#ffffff";
+      c.fillRect(0, 0, 160, 144);
     }
   };
 
+  FetchGame.prototype.draw = function () {
+    this.paint();
+    this.ensureLoop();
+  };
+
+  FetchGame.prototype.ensureLoop = function () {
+    if (this.looping) return;
+    this.looping = true;
+    var self = this;
+    this.raf = requestAnimationFrame(function () { self.loop(); });
+  };
+
   FetchGame.prototype.loop = function () {
-    if (!this.running) return;
-    this.draw();
+    if (!this.looping) return;
+    this.tickFx();
+    this.paint();
+    if (!this.looping) return;
     var self = this;
     this.raf = requestAnimationFrame(function () { self.loop(); });
   };
@@ -226,16 +371,17 @@
     this.score = 0;
     this.reset(1);
     this.dead = false;
+    this.paused = false;
     this.running = true;
-    cancelAnimationFrame(this.raf);
-    var self = this;
-    this.raf = requestAnimationFrame(function () { self.loop(); });
+    this.ensureLoop();
     this.emit();
-    this.draw();
+    this.paint();
   };
 
   FetchGame.prototype.stop = function () {
     this.running = false;
+    this.paused = false;
+    this.looping = false;
     cancelAnimationFrame(this.raf);
   };
 

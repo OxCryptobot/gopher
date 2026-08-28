@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#070908">
+  <title>selector not found — GOPHER AI</title>
+  <style>
+    :root { --bg:#070908; --fg:#39ff14; --dim:#1a7a12; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, "Courier New", monospace;
+    }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background: radial-gradient(120% 80% at 50% -10%, rgba(57,255,20,.07), transparent 55%), var(--bg);
+    }
+    .crt {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,12,0,.28) 2px 3px);
+      opacity: .45;
+    }
+    main { position: relative; max-width: 36ch; }
+    .itype { color: var(--dim); margin-right: .4ch; }
+    h1 { font-size: 1.15rem; font-weight: 600; letter-spacing: .04em; margin: 0 0 .75rem; text-shadow: 0 0 12px rgba(57,255,20,.28); }
+    p { margin: 0 0 .75rem; }
+    .dim { color: var(--dim); }
+    pre { margin: 0 0 1rem; line-height: 1.2; }
+    a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--dim); }
+    a:hover { border-bottom-color: var(--fg); }
+    nav { display: flex; gap: 1.25rem; margin-top: 1.25rem; }
+  </style>
+</head>
+<body>
+  <div class="crt" aria-hidden="true"></div>
+  <main>
+    <pre aria-hidden="true">     ,-"""-.
+    /  o o  \
+    |    ∇   |
+     \ --- /</pre>
+    <p><span class="itype">3</span>Error &lt;error&gt;</p>
+    <h1>selector not found</h1>
+    <p class="dim">That hole is empty. Pick a live selector.</p>
+    <nav>
+      <a href="./">1 Home</a>
+      <a href="./#/fetch">5 PLAY FETCH</a>
+    </nav>
+  </main>
+</body>
+</html>

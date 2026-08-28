@@ -1,0 +1,3 @@
+Contact: https://github.com/OxCryptobot/gopher/issues
+Preferred-Languages: en
+Expires: 2027-08-27T00:00:00.000Z
