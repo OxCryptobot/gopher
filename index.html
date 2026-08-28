@@ -19,6 +19,7 @@
   <title>GOPHER AI</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23070908'/%3E%3Ctext x='2' y='13' font-size='12' font-family='monospace' fill='%2339ff14'%3Eg%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -58,6 +59,10 @@
       <h1>GOPHER AI</h1>
       <p class="breath">A paid phone assistant. You send an order. It fetches.</p>
       <p class="tag">1991 protocol. 2026 interface. Now with a hole you can play.</p>
+      <p class="play-row">
+        <a class="play-cta" href="#/fetch">5 PLAY FETCH</a>
+        <span class="dim">arrows · WASD · pad</span>
+      </p>
     </section>
 
     <section class="menu-block wait" id="ask">
@@ -105,7 +110,7 @@
 
     <section id="game" class="menu-block game-block" hidden>
       <h2><span class="itype">5</span> FETCH/</h2>
-      <p class="info">One tap, one tile. Collect blink packets. Walls bump. Orange sludge costs a life. Arrows, WASD, or the pad.</p>
+      <p class="info">One tap, one tile. Collect blink packets. Walls bump. Orange sludge costs a life. Arrows, WASD, pad, or swipe. P pauses.</p>
       <div class="game-wrap">
         <canvas id="fetch" width="160" height="144" aria-label="FETCH, an 8-bit gopher game"></canvas>
         <div class="game-hud">
@@ -124,6 +129,7 @@
         </div>
         <div class="row">
           <button type="button" id="g-start">START</button>
+          <button type="button" id="g-pause" class="ghost">PAUSE</button>
           <button type="button" id="g-mute" class="ghost">MUTE</button>
         </div>
         <p class="status-line" id="g-status">press START. one direction per tap. fetch the blinking packets.</p>
@@ -135,6 +141,7 @@
       <p class="dim">menus · selectors · fetch</p>
     </footer>
   </div>
+  <noscript><p class="info" style="padding:1rem">GOPHER AI needs JavaScript. Open this page with JS on, then press 5 for FETCH.</p></noscript>
   <script src="game.js"></script>
   <script src="app.js"></script>
 </body>

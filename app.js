@@ -12,12 +12,10 @@
     "/": {
       title: "Directory of GOPHER AI",
       items: [
-        { n: "1", type: "1", name: "About/", path: "/about", hint: "what this is" },
-        { n: "2", type: "1", name: "How/", path: "/how", hint: "order in, fetch, reply" },
-        { n: "3", type: "1", name: "Capabilities/", path: "/caps", hint: "what it does" },
-        { n: "4", type: "0", name: "Privacy", path: "/privacy", hint: "one line" },
-        { n: "5", type: "1", name: "FETCH/", path: "/fetch", hint: "8-bit burrow game" },
+        { n: "1", type: "1", name: "Docs/", path: "/docs", hint: "about, how, caps, privacy" },
+        { n: "5", type: "1", name: "FETCH/", path: "/fetch", hint: "PLAY NOW — 8-bit burrow" },
         { n: "6", type: "7", name: "Waitlist", path: "/waitlist", hint: "get in" },
+        { n: "8", type: "1", name: "Games/", path: "/games", hint: "more holes" },
         { n: "9", type: "1", name: "User/", path: "/user", hint: "enter your hole" }
       ]
     },
@@ -285,6 +283,9 @@
   function render() {
     var path = pathNow();
     $("host").textContent = "gopher://gopher.ai:70" + path;
+    document.title = path === "/fetch" || path === "/games"
+      ? "FETCH — GOPHER AI"
+      : (path === "/" ? "GOPHER AI" : ("GOPHER AI " + path));
     renderDir(path);
     paintWho();
     hideSpecial();
@@ -310,6 +311,13 @@
       askEl.hidden = false;
       gameEl.hidden = false;
       bootGame();
+      return;
+    }
+    if (path === "/scores") {
+      askEl.hidden = false;
+      viewEl.hidden = false;
+      viewEl.innerHTML = "<h2>0 Scores/</h2><p class='info'>local best on this device, plus the hole board if the server is up.</p><pre class='gopher-doc' id='scoreboard'>loading…</pre>";
+      paintScores();
       return;
     }
     var doc = HOLES[path];
@@ -450,11 +458,27 @@
       tutDismiss();
       if (e.key === "Escape") return;
     }
-    if (!gameEl.hidden && game && game.running && !inField) {
-      if (e.key === "ArrowUp" || e.key === "w") { e.preventDefault(); game.input("up"); }
-      if (e.key === "ArrowDown" || e.key === "s") { e.preventDefault(); game.input("down"); }
-      if (e.key === "ArrowLeft" || e.key === "a") { e.preventDefault(); game.input("left"); }
-      if (e.key === "ArrowRight" || e.key === "d") { e.preventDefault(); game.input("right"); }
+    if (!gameEl.hidden && game && !inField) {
+      if (e.key === "p" || e.key === "P") {
+        e.preventDefault();
+        if (game.pauseToggle) game.pauseToggle();
+        var paused = !!game.paused;
+        setStatus($("g-status"), "", paused ? "paused. P or PAUSE to dig." : "fetch packets. avoid orange sludge.");
+        var gp = $("g-pause");
+        if (gp) gp.textContent = paused ? "RESUME" : "PAUSE";
+      }
+      if (e.key === " " && !game.running) {
+        e.preventDefault();
+        scoreSent = false;
+        game.start();
+        setStatus($("g-status"), "", "fetch packets. avoid orange sludge.");
+      }
+      if (game.running) {
+        if (e.key === "ArrowUp" || e.key === "w") { e.preventDefault(); game.input("up"); }
+        if (e.key === "ArrowDown" || e.key === "s") { e.preventDefault(); game.input("down"); }
+        if (e.key === "ArrowLeft" || e.key === "a") { e.preventDefault(); game.input("left"); }
+        if (e.key === "ArrowRight" || e.key === "d") { e.preventDefault(); game.input("right"); }
+      }
     }
     if (inField) {
       if (e.key === "Escape") e.target.blur();
@@ -465,7 +489,7 @@
       if (tutOpen) tutDismiss();
       go("/");
       $("command").focus();
-      if (e.key === "?") setStatus($("ask-status"), "", "1 Docs/ · 5 Games/ · 6 waitlist · 9 user");
+      if (e.key === "?") setStatus($("ask-status"), "", "1 Docs/ · 5 FETCH play · 6 waitlist · 9 user");
       return;
     }
     if (e.key === "Escape" || e.key === "0") { go("/"); return; }
@@ -597,6 +621,13 @@
     game.mute = !game.mute;
     $("g-mute").textContent = game.mute ? "MUTE" : "SOUND";
   });
+  var gPause = $("g-pause");
+  if (gPause) gPause.addEventListener("click", function () {
+    if (!game) bootGame();
+    if (game.pauseToggle) game.pauseToggle();
+    gPause.textContent = game.paused ? "RESUME" : "PAUSE";
+    setStatus($("g-status"), "", game.paused ? "paused. P or PAUSE to dig." : "fetch packets. avoid orange sludge.");
+  });
   document.querySelectorAll(".dpad button").forEach(function (b) {
     b.addEventListener("click", function () {
       if (game) game.input(b.getAttribute("data-dir"));
@@ -610,6 +641,32 @@
     tutEl.addEventListener("click", function (ev) {
       if (ev.target === tutEl) tutDismiss();
     });
+  }
+
+  function paintScores() {
+    var el = $("scoreboard");
+    if (!el) return;
+    var local = 0;
+    try { local = bestScore(whoName()); } catch (e) {}
+    var txt = "device   " + whoName() + "  best " + local + "\n";
+    fetch("/api/scores", { headers: { Accept: "application/json" } })
+      .then(function (res) { return res.ok ? res.json() : []; })
+      .then(function (rows) {
+        if (!Array.isArray(rows) || !rows.length) {
+          el.textContent = txt + "\nboard    empty (needs the local server)";
+          return;
+        }
+        txt += "\nboard\n";
+        rows.slice(0, 10).forEach(function (r, i) {
+          txt += String(i + 1).padStart(2, " ") + "  " + String((r && r.name) || "guest").slice(0, 16).padEnd(16, " ") + "  " + ((r && r.score) || 0) + "\n";
+        });
+        el.textContent = txt;
+      })
+      .catch(function () { el.textContent = txt + "\nboard    offline"; });
+  }
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
   }
 
   render();

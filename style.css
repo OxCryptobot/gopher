@@ -464,3 +464,31 @@ pre.gopher-doc {
 .tutorial-card li { margin: 0.4rem 0; }
 .tutorial-card kbd { margin-right: 0.45rem; }
 .tutorial-card button { width: 100%; }
+
+.play-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 1rem 0 0;
+}
+.play-cta {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--fg);
+  color: var(--bg);
+  background: var(--fg);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: var(--glow);
+}
+.play-cta:hover, .play-cta:focus {
+  background: var(--fg-bright);
+  outline: 2px solid var(--fg-bright);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt { display: none; }
+  * { animation: none !important; transition: none !important; }
+}
